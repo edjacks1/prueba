@@ -2,71 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\empleados;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 //Modelos
 use App\Modelos\Empleado;
 
+
 class EmpleadosController extends Controller{
 
-    private $request;
-
-    function __construct(Request $request) {
-        $this->request = $request;
-    }
-    
     public function index(){
         $empleados = Empleado::all();
-        // dd();
 
         return view('Empleados.index', compact('empleados'));
     }
 
-    public function create(){
-
-        $validatedData = $this->request->validate([
-            'nombre'           => 'required|unique:posts|max:255',
-            'apellido_paterno' => 'required',
-            'apellido_materno' => 'required',
-            'tipo_contracto'   => 'required',
-            'estado'           => 'required'
-        ]);
-
-        dd($validatedData);
-        
-        Empleado::create([
-            'nombre'           => 'Edwin',
-            'apellido_paterno' => 'Otwell',
-            'apellido_materno' => 'Developer',
-            'tipo_contracto'   => 'Algun contrato',
+    public function crear(Request $request){
+        //Valido el request
+        $validador = $this->validarRequest( $request );
+        //Si falla lo retornamos a la ruta del index
+        if( $validador->fails() ){
+            return redirect()->route('empleados.index')->withErrors( $validador->messages()->get('*') );
+        }
+        //Obtenemos solo los atributos validados
+        $validador = $validador->valid();
+        //Creamos el empleado
+        $empleado = Empleado::create([
+            'nombre'           => $validador['nombre'],
+            'apellido_paterno' => $validador['apellido_paterno'],
+            'apellido_materno' => $validador['apellido_materno'],
+            'tipo_contrato'    => $validador['tipo_contrato'],
+            'email'            => $validador['email'],
             'estado'           => 0
         ]);
 
         return redirect()->route('empleados.index');
     }
 
-    public function store()
-    {
-        //
+    public function actualizar(Request $request, Empleado $empleado){
+        //Valido el request
+        $validador = $this->validarRequest( $request );
+        //Si falla lo retornamos a la ruta del index
+        if( $validador->fails() ){
+            return redirect()->route('empleados.index')->withErrors( $validador->messages()->get('*') );
+        }
+        //Obtenemos solo los atributos validados
+        $validador = $validador->valid();
+        //Actualizo al empleado
+        $empleado->update([
+            'nombre'           => $validador['nombre'],
+            'apellido_paterno' => $validador['apellido_paterno'],
+            'apellido_materno' => $validador['apellido_materno'],
+            'tipo_contrato'    => $validador['tipo_contrato'],
+            'email'            => $validador['email'],
+            'estado'           => 0
+        ]);
+
+        return redirect()->route('empleados.index');
     }
 
-    public function show(empleados $empleados)
-    {
-        //
+    public function cambiarEstatus(Request $request, Empleado $empleado ){
+
+        $empleado->estado = ($empleado->estado === 0) ? 1 : 0;
+        $empleado->save();
+
+        return redirect()->route('empleados.index');
     }
 
-    public function edit(empleados $empleados)
-    {
-        //
+    public function eliminar(Request $request, Empleado $empleado ){
+
+        $empleado->delete();
+        
+        return redirect()->route('empleados.index');
     }
 
-    public function update(Request $request, empleados $empleados)
-    {
-        //
-    }
-
-    public function destroy(empleados $empleados)
-    {
-        //
+    public function validarRequest(Request $request){
+        //Validar los campos necesarios
+        $validador = Validator::make($request->all(), [
+            'nombre'           => 'required|regex:/^([^0-9]*)$/',
+            'apellido_paterno' => 'required|regex:/^([^0-9]*)$/',
+            'apellido_materno' => 'required|regex:/^([^0-9]*)$/',
+            'tipo_contrato'    => 'required',
+            'email'            => 'required|email'
+        ]);
+    
+        return $validador; //Retornamos el validador
     }
 }

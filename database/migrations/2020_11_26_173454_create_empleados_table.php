@@ -18,10 +18,12 @@ class CreateEmpleadosTable extends Migration
             $table->string('nombre');
             $table->string('apellido_paterno');
             $table->string('apellido_materno');
-            $table->string('tipo_contracto');
+            $table->string('tipo_contrato');
+            $table->string('email');
             $table->boolean('estado');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

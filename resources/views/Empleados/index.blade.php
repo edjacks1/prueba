@@ -1,7 +1,11 @@
 @extends('Layout.index')
 
-<div class="container mt-5">
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formulario-agregar">Agregar</button>
+{{-- Si existe un error mostar el mensaje --}}
+
+
+@section('content')
+  <div class="container mt-5">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-agregar">Agregar</button>
 
     <table class="table container" >
         <thead class="thead-dark">
@@ -17,38 +21,43 @@
     
           @foreach ($empleados as $empleado)
             <tr>
-                <td> {{$empleado->id}} </th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
+                <td> {{$empleado->id}}                                                                     </th>
+                <td> {{$empleado->nombre.' '.$empleado->apellido_paterno.' '.$empleado->apellido_materno}} </td>
+                <td> {{$empleado->email}}                                                                  </td>
+                <td> {{$empleado->tipo_contrato}}                                                          </td>
+                <td> 
+                  {{-- Boton para modificar los datos del empleado --}}
+                  <button type="button" class="btn btn-primary" 
+                                        onclick="llenarFormulario( 'modal-actualizar','form_editar','{{$empleado}}' )">
+                                        Editar  
+                  </button> 
+                  {{-- Boton para mostrar el empleado --}}
+                  <button type="button" class="btn btn-success"
+                                        onclick="llenarFormulario( 'modal-ver','form_ver','{{$empleado}}', true )">
+                                        Ver     
+                  </button> 
+                  {{-- Validar el estatus del empleado --}}
+                  @include('Empleados.acciones.cambiarEstatus')
+                  {{-- Boton para eliminar empleado --}}
+                  @include('Empleados.acciones.eliminar')
+                </td>
             </tr>
           @endforeach
           
         </tbody>
     </table>
 
-</div>
-
-<div class="modal fade" id="formulario-agregar" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Agregar empleados</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          
-            @include('Empleados.formulario')
-
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-          <button type="button" class="btn btn-primary">Agregar</button>
-        </div>
-      </div>
-    </div>
   </div>
+
+  @include('Empleados.acciones.crear')
+  @include('Empleados.acciones.actualizar')
+  @include('Empleados.acciones.verDetalles')
+
+@endsection
+
+@push('scripts')
+  <script src="{{asset('Empleados/general.js')}}"></script>
+@endpush
+
 
 
